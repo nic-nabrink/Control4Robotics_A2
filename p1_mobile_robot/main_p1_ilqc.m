@@ -53,7 +53,20 @@ save_on = true;
 % 'task_ilqc.cost' via the method 'task_design()'
 %
 
+for i = 1:1:task_ilqc.max_iteration
+    sim_out_it = mobile_robot_sim(model,task_ilqc,controller_ilqc);
+    [g_n_,q_n,Q_n] = terminal_cost_quad(task_ilqc.cost.params.Q_t, task_ilqc.goal_x, sim_out_it.x(:,end));
+    s_k_ = g_n_;
+    s_k = q_n;
+    S_k = Q_n;
 
+    for k = 1:1:N-2
+        [A_k,B_k] = mobile_robot_lin(sim_out_it.x(:,end-k),sim_out_it.u(:,end-k),task_ilqc.dt,model.param.const_vel);
+        [g_k_,q_k,Q_k,r_k,R_k,P_k] = stage_cost_quad(task_ilqc.cost.params.Q_s,task_ilqc.cost.params.R_s,task_ilqc.goal_x,task_ilqc.dt,sim_out_it.x(:,end-k),sim_out_it.u(:,end-k));
+        [theta_kff,theta_kfb,s_k_,s_k,S_k] = update_policy(A_k,B_k,g_k_,q_k,Q_k,r_k,R_k,P_k,s_k_,s_k,S_k,sim_out_it.x(:,end-k),sim_out_it.u(:,end-k));
+        controller_ilqc(:,(end-k)) = [theta_kff theta_kfb]';
+    end
+end
 
 %
 % =========================================================================
@@ -62,6 +75,7 @@ save_on = true;
 sim_out_ilqc = mobile_robot_sim(model, task_ilqc, controller_ilqc);
 fprintf('\n\ntarget state [%.3f; %.3f]\n', task_ilqc.goal_x);
 fprintf('reached state [%.3f; %.3f]\n', sim_out_ilqc.x(:,end));
+fprintf('total cost %.3f \n', sim_out_ilqc.cost);
 
 %% Plots
 if plot_on
