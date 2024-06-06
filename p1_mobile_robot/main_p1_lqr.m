@@ -71,6 +71,7 @@ fprintf('--- LQR ---\n\n');
 fprintf('trajectory cost: %.2f\n', sim_out_lqr.cost);
 fprintf('target state [%.3f; %.3f]\n', task_lqr.goal_x);
 fprintf('reached state [%.3f; %.3f]\n', sim_out_lqr.x(:,end));
+fprintf('initial state [%.3f; %.3f]\n', task_lqr.start_x);
 
 %% Plots
 if plot_on
