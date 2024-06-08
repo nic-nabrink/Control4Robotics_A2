@@ -73,9 +73,10 @@ end
 
 %% Simulation
 sim_out_ilqc = mobile_robot_sim(model, task_ilqc, controller_ilqc);
-fprintf('\n\ntarget state [%.3f; %.3f]\n', task_ilqc.goal_x);
+fprintf('--- ILQC ---\n\n');
+fprintf('trajectory cost: %.2f \n', sim_out_ilqc.cost);
+fprintf('target state [%.3f; %.3f]\n', task_ilqc.goal_x);
 fprintf('reached state [%.3f; %.3f]\n', sim_out_ilqc.x(:,end));
-fprintf('total cost %.3f \n', sim_out_ilqc.cost);
 fprintf('initial state [%.3f; %.3f]\n', task_ilqc.start_x);
 
 %% Plots

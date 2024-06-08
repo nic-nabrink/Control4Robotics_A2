@@ -52,18 +52,23 @@ theta_k = theta;
 %
 % x_lin = ...;
 % u_lin = ...;
-  
+x_lin = Task.cost.x_eq;
+u_lin = Task.cost.u_eq;
+
 % [Todo] The linearized system dynamics matrices A_lin B_lin describe the
 % dynamics of the system around the equilibrium state. Use Model.Alin{1}
 % and Model.Blin{1}.
 %
 % A_lin = ...;
 % B_lin = ...;
+A_lin = Model.Alin{1}(x_lin,u_lin,Model.param.syspar_vec);
+B_lin = Model.Blin{1}(x_lin,u_lin,Model.param.syspar_vec);
 
 % [Todo] Compute optimal LQR gain (see command 'lqr')
 % Quadratic cost defined as Task.cost.Q_lqr,Task.cost.R_lqr
 % 
 % K = ...;
+[K,S,P] = lqr(A_lin,B_lin,Task.cost.Q_lqr,Task.cost.R_lqr);
 % =========================================================================
 
 %% Design the actual controller using the optimal feedback gains K
@@ -78,7 +83,7 @@ LQR_Controller.time    = Task.start_time:Task.dt:(Task.goal_time-Task.dt);
 %                         = [uff + K'x_ref, -K' ]' * [1,x']'
 %                         =        theta'          * BaseFnc
 
-lqr_type = 'goal_state';  % Choose 'goal_state' or 'via_point'
+lqr_type = 'via_point';  % Choose 'goal_state' or 'via_point'
 fprintf('LQR controller design type: %s \n', lqr_type);
 Nt = ceil((Task.goal_time - Task.start_time)/Task.dt+1);
 
@@ -92,6 +97,12 @@ switch lqr_type
         %
         % x_ref = ...; % reference point the controller tries to reach
         % theta = ...; % dimensions (13 x 4)
+        x_ref = Task.goal_x;
+        u_ref = u_lin;
+        theta_ff = [u_ref + K*x_ref];
+        theta_fb = -K;
+        theta = [theta_ff theta_fb]';
+
         % =================================================================
         
         % stack constant theta matrices for every time step Nt
@@ -107,9 +118,21 @@ switch lqr_type
            % [Todo] x_ref at current time
            % ...
            %
+           u_ref = u_lin;
+           theta_fb = -K;
+
+           if t*Task.dt < t1
+            x_ref = p1;
+            theta_ff = [u_ref + K*x_ref];
+
+           else
+            x_ref = Task.goal_x;
+            theta_ff = [u_ref + K*x_ref];
+           end
            % [Todo] time-varying theta matrices for every time step Nt 
            % (see handout Eqn.(12)) (size: 13 x 4)
            % theta_k = ...;
+           theta_k = [theta_ff theta_fb]';
            % ==============================================================
 
            % save controller gains to struct

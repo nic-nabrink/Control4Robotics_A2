@@ -1,4 +1,4 @@
-% main_p2_lqr: Main script for Problem 2.2 LQR controller design.
+  % main_p2_lqr: Main script for Problem 2.2 LQR controller design.
 %
 % --
 % Control for Robotics

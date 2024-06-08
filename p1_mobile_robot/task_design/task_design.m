@@ -37,7 +37,7 @@ function task = task_design( )
     task.dt = 0.02;         % discrete time step
 
     % start and final states
-    task.start_x = [0; 0];   % [y; h]
+    task.start_x = [0; pi];   % [y; h]
     task.goal_x = [-5; 0];   % [y; h]
     
     % stage cost function parameters
