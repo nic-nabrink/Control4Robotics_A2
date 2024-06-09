@@ -44,7 +44,7 @@ Task.goal_x         = [10; 0; 0;   % position x,y,z
                         0; 0; 0;   % velocity x,y,z
                         0; 0; 0 ]; % angular rates roll, pitch, yaw
                     
-Task.vp1            = [ 0;  0; 0;  % via-point state to pass through
+Task.vp1            = [ 5;  0; 0;  % via-point state to pass through
                         0; 0; 0;   % roll, pitch, yaw
                         0; 0; 0;   % velocity x,y,z
                         0; 0; 0 ]; % angular rates roll, pitch, yaw 

@@ -76,7 +76,7 @@ x = x_sym;
 u = u_sym;
 x_goal = Task.goal_x;
 
-ilqc_type = 'goal_state'; % Choose 'goal_state or 'via_point'
+ilqc_type = 'via_point'; % Choose 'goal_state or 'via_point'
 fprintf('ILQC cost function type: %s \n', ilqc_type);
 switch ilqc_type
     case 'goal_state'     
@@ -94,7 +94,7 @@ switch ilqc_type
         % handout Eqn.(19)) Hint: Which weightings must be zero for the
         % algorithm to determine optimal values?
         %
-        % Q_vp = ...;
+        Q_vp = diag([3 3 3 0 0 0 0 0 0 0 0 0]);
         % =================================================================
 
         % don't penalize position deviations, drive system with final cost
@@ -104,9 +104,9 @@ switch ilqc_type
         % [Todo] Define symbolic cost function. 
         % Note: Use function "viapoint(.)" below
         %
-        % viapoint_cost = viapoint(t1,p1,x,t_sym,Q_vp);
-        % Cost.h = ...;
-        % Cost.l = ... + viapoint_cost;
+        viapoint_cost = viapoint(t1,p1,x,t_sym,Q_vp);
+        Cost.h = simplify((x-x_goal)'*Cost.Qmf*(x-x_goal));
+        Cost.l = simplify( (x-Cost.x_eq)'*Cost.Qm*(x-Cost.x_eq) + (u-Cost.u_eq)'*Cost.Rm*(u-Cost.u_eq)) + viapoint_cost;
         % =================================================================       
         
       otherwise

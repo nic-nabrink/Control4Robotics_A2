@@ -83,7 +83,7 @@ LQR_Controller.time    = Task.start_time:Task.dt:(Task.goal_time-Task.dt);
 %                         = [uff + K'x_ref, -K' ]' * [1,x']'
 %                         =        theta'          * BaseFnc
 
-lqr_type = 'goal_state';  % Choose 'goal_state' or 'via_point'
+lqr_type = 'via_point';  % Choose 'goal_state' or 'via_point'
 fprintf('LQR controller design type: %s \n', lqr_type);
 Nt = ceil((Task.goal_time - Task.start_time)/Task.dt+1);
 
@@ -119,7 +119,6 @@ switch lqr_type
            % ...
            %
            u_ref = u_lin;
-           theta_fb = -K;
 
            if t*Task.dt < t1
             x_ref = p1;
@@ -132,6 +131,7 @@ switch lqr_type
            % [Todo] time-varying theta matrices for every time step Nt 
            % (see handout Eqn.(12)) (size: 13 x 4)
            % theta_k = ...;
+           theta_fb = -K;
            theta_k = [theta_ff theta_fb]';
            % ==============================================================
 
