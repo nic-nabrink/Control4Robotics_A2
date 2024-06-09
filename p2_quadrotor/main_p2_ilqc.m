@@ -1,4 +1,4 @@
-% main_p2_ilqc: Main script for Problem 2.2 ILQC controller design.
+ % main_p2_ilqc: Main script for Problem 2.2 ILQC controller design.
 %
 % --
 % Control for Robotics

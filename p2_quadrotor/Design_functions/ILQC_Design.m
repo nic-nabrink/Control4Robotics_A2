@@ -102,7 +102,7 @@ while ( i <= Task.max_iteration && ( norm(squeeze(duff)) > 0.01 || i == 1 ))
     %% Forward pass / "rollout" of the current policy
     % =====================================================================
     % [Todo] rollout states and inputs
-    % sim_out = ...;
+    sim_out = Quad_Simulator(Model,Task,Controller);
     % =====================================================================
     
     % pause if cost diverges
@@ -120,9 +120,9 @@ while ( i <= Task.max_iteration && ( norm(squeeze(duff)) > 0.01 || i == 1 ))
     % [Todo] define nominal state and control input trajectories (dim by
     % time steps). Note: sim_out contains state x, input u, and time t
     %
-    % X0 = ...; % x_bar
-    % U0 = ...; % u_bar
-    % T0 = ...; % t
+    X0 = sim_out.x; % x_bar
+    U0 = sim_out.u; % u_bar
+    T0 = sim_out.t; % t
     % =====================================================================
 
     Q_t = Task.cost.Qmf;
@@ -134,10 +134,10 @@ while ( i <= Task.max_iteration && ( norm(squeeze(duff)) > 0.01 || i == 1 ))
     % [Todo] Initialize the value function elements starting at final time
     % step (Problem 2.2 (g))
     %
-    % xf = X0(:,end); % final state when using current controller
-    % Sm(:,:,N) = ...;
-    % Sv(:,N) = ...;
-    % s(N) = ...;
+    xf = X0(:,end); % final state when using current controller
+    Sm(:,:,N) = QmN_fun(xf);
+    Sv(:,N) = gvN_fun(xf);
+    s(N) = gbarN_fun(xf);
     % =====================================================================
     
     % "Backward pass": Calculate the coefficients (s,Sv,Sm) for the value
@@ -154,10 +154,10 @@ while ( i <= Task.max_iteration && ( norm(squeeze(duff)) > 0.01 || i == 1 ))
         % around specific pair (xO,uO). See exercise sheet Eqn. (18) for
         % details.
         %
-        % Alin = ...;
-        % Blin = ...;
-        % A = ...;
-        % B = ...;
+        Alin = Model.Alin{1}(x0,u0,Model.param.syspar_vec);
+        Blin = Model.Blin{1}(x0,u0,Model.param.syspar_vec);
+        A = Alin*Task.dt + eye([size(Alin*Task.dt)]);
+        B = Blin*Task.dt;
         % =================================================================
 
         % =================================================================
@@ -165,40 +165,41 @@ while ( i <= Task.max_iteration && ( norm(squeeze(duff)) > 0.01 || i == 1 ))
         % [Note] use function {gbar_fun, gv_fun, Qm_fun, rv_fun, Rm_fun,
         % Pm_fun} provided above.
         %
-        % t0 = T0(:,k);
-        % gbar = ...;
-        % Qv = ...;
-        % Qm = ...;
-        % Rv = ...;
-        % Rm = ...;
-        % Pm = ...;
+        t0 = T0(:,k);
+        gbar = gbar_fun(t0,x0,u0);
+        Qv = gv_fun(t0,x0,u0);
+        Qm = Qm_fun(t0,x0,u0);
+        Rv = rv_fun(t0,x0,u0);
+        Rm = Rm_fun(t0,x0,u0);
+        Pm = Pm_fun(t0,x0,u0);
         % =================================================================
 
         % =================================================================
         % [Todo] control dependent terms of cost function (Problem 2.2 (f))
         %
-        % l = ...;  % linear control dependent
-        % G = ...;	% control and state dependent
-        % H = ...;	% quadratic control dependent
+        l = Rv + B'*Sv(:,k+1);  % linear control dependent
+        G = Pm + B'*Sm(:,:,k+1)*A;	% control and state dependent
+        H = Rm + B'*Sm(:,:,k+1)*B;	% quadratic control dependent
         %
-        % H = (H+H')/2; % ensuring H remains symmetric; do not delete!
+        H = (H+H')/2; % ensuring H remains symmetric; do not delete!
         % =================================================================
 
         % =================================================================
         % [Todo] the optimal change of the input trajectory du = duff +
         % K*dx (Problem 2.2 (f))
         %
-        % duff(:,:,k) = ...;
-        % K(:,:,k) = ...;
+  
+        K(:,:,k) = -H\G;
+        duff(:,:,k) = -H\l;
         % =================================================================
 
         % =================================================================
         % [Todo] Solve Riccati-like equations for current time step n
         % (Problem 2.2 (g))
         %
-        % Sm(:,:,k) = ...;
-        % Sv(:,k) = ...;
-        % s(k) = ...;
+        Sm(:,:,k) = Qm + A'*Sm(:,:,k+1)*A + K(:,:,k)'*H*K(:,:,k) + K(:,:,k)'*G + G'*K(:,:,k);
+        Sv(:,k) = Qv + A'*Sv(:,k+1) + K(:,:,k)'*H*duff(:,:,k) + K(:,:,k)'*l + G'*duff(:,:,k);
+        s(k) = gbar + s(k+1) + 0.5*duff(:,:,k)'*H*duff(:,:,k) + duff(:,:,k)'*l;
         % =================================================================
 
     end % of backward pass for solving Riccati equation
@@ -248,14 +249,14 @@ theta_ff = repmat(theta(1,:), 1, 1, N-1);
 % =========================================================================
 % [Todo] feedforward control input
 %
-% U0 = permute(U0, [3, 1, 2]);
-% dUff = permute(dUff, [2, 1, 3]);
-% KX0 = zeros(1, m, N-1);
-% for i = 1:1:N-1
-%     KX0(:,:,i) = K(:,:,i)*X0(:,i);
-% end
+U0 = permute(U0, [3, 1, 2]);
+dUff = permute(dUff, [2, 1, 3]);
+KX0 = zeros(1, m, N-1);
+for i = 1:1:N-1
+    KX0(:,:,i) = K(:,:,i)*X0(:,i);
+end
 %
-% theta_ff = ...;
+theta_ff = U0 + dUff - KX0;
 % =========================================================================
 
 % feedback gain of control input (size: n * m * N-1)

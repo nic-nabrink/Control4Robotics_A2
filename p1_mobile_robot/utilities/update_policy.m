@@ -3,8 +3,8 @@ function [theta_kff,theta_kfb,s_k_,s_k,S_k] = update_policy(A_k,B_k,g_k,q_k,Q_k,
     G_k = B_k'*S_k1*A_k;
     H_k = R_k+B_k'*S_k1*B_k;
 
-    K_k = -G_k/H_k;
-    du_kff = -l_k/H_k;
+    K_k = -H_k\G_k;
+    du_kff = -H_k\l_k;
 
     theta_kff = u_k+du_kff-K_k*x_k;
     theta_kfb = K_k;
