@@ -44,12 +44,12 @@ Task.goal_x         = [10; 0; 0;   % position x,y,z
                         0; 0; 0;   % velocity x,y,z
                         0; 0; 0 ]; % angular rates roll, pitch, yaw
                     
-Task.vp1            = [ 5;  0; 0;  % via-point state to pass through
+Task.vp2            = [ 5;  0; 0;  % via-point state to pass through
                         0; 0; 0;   % roll, pitch, yaw
                         0; 0; 0;   % velocity x,y,z
                         0; 0; 0 ]; % angular rates roll, pitch, yaw 
                     
-Task.vp2 = [5;-5;-5;0;0;0;         % difficult waypoint only possible for
+Task.vp1 = [5;-5;-5;0;0;0;         % difficult waypoint only possible for
             0;0;0;0;0;0;];         % ILQC   
                     
 Task.vp_time = Task.goal_time/3;   % time to pass through via-point

@@ -94,7 +94,7 @@ switch ilqc_type
         % handout Eqn.(19)) Hint: Which weightings must be zero for the
         % algorithm to determine optimal values?
         %
-        Q_vp = diag([3 3 3 0 0 0 0 0 0 0 0 0]);
+        Q_vp = diag([30 30 30 0 0 0 0 0 0 0 0 0]);
         % =================================================================
 
         % don't penalize position deviations, drive system with final cost
